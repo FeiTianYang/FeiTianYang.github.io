@@ -1,133 +1,51 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>文件夹图片自动轮播器</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: "Microsoft YaHei", sans-serif; text-align: center; padding: 2rem; background: #f0f2f5; }
-        .container { max-width: 1200px; margin: 0 auto; }
-        /* 控制区 */
-        .control-bar { background: #fff; padding: 1.5rem; border-radius: 10px; box-shadow: 0 3px 10px rgba(0,0,0,0.08); margin-bottom: 1.5rem; display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; align-items: center; }
-        .control-bar label { font-weight: 500; color: #333; }
-        .control-bar input[type="number"] { padding: 0.8rem; width: 120px; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 1rem; }
-        .control-bar input[type="file"] { display: none; }
-        .custom-btn { padding: 0.8rem 1.5rem; border: none; border-radius: 6px; font-size: 1rem; cursor: pointer; transition: all 0.3s; }
-        .folder-btn { background: #4096ff; color: #fff; }
-        .folder-btn:hover { background: #2582f7; }
-        .start-btn { background: #00b42a; color: #fff; }
-        .start-btn:disabled { background: #86e89c; cursor: not-allowed; }
-        .pause-btn { background: #ff7d00; color: #fff; }
-        .pause-btn:disabled { background: #ffc078; cursor: not-allowed; }
-        /* 图片区 */
-        .image-box { height: 650px; background: #fff; border-radius: 10px; box-shadow: 0 3px 10px rgba(0,0,0,0.08); display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }
-        #display-img { max-width: 95%; max-height: 95%; object-fit: contain; }
-        /* 状态提示 */
-        .status-info { margin-top: 1rem; color: #666; font-size: 0.95rem; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>你想要的卡片标题</title>
+  <meta name="description" content="你想要的卡片描述">
+
+  <!-- 微信、QQ、微博等会优先抓这些 -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="你想要的卡片标题">
+  <meta property="og:description" content="你想要的卡片描述">
+  <meta property="og:image" content="https://你的域名/图片.jpg">
+  <meta property="og:image:secure_url" content="https://你的域名/图片.jpg">
+  <meta property="og:image:width" content="500">
+  <meta property="og:image:height" content="400">
+  <meta property="og:url" content="https://你的域名/">
+
+  <!-- 备用抓取标签 -->
+  <link rel="image_src" href="https://你的域名/图片.jpg">
+  <meta itemprop="image" content="https://你的域名/图片.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="你想要的卡片标题">
+  <meta name="twitter:description" content="你想要的卡片描述">
+  <meta name="twitter:image" content="https://你的域名/图片.jpg">
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #f5f5f5;
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+    }
+    .wrap {
+      width: 100%;
+      max-width: 600px;
+      background: #fff;
+    }
+    .wrap img {
+      width: 100%;
+      display: block;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>文件夹图片自动轮播器</h1>
-        
-        <!-- 控制区域 -->
-        <div class="control-bar">
-            <label for="interval-set">切换间隔：</label>
-            <input type="number" id="interval-set" placeholder="秒数" min="1" value="3">
-            <label for="folder-pick" class="custom-btn folder-btn">选择图片文件夹</label>
-            <input type="file" id="folder-pick" webkitdirectory directory accept="image/*">
-            <button class="custom-btn start-btn" id="start-carousel" disabled>开始轮播</button>
-            <button class="custom-btn pause-btn" id="pause-carousel" disabled>暂停轮播</button>
-        </div>
-        
-        <!-- 图片展示区域 -->
-        <div class="image-box">
-            <img id="display-img" src="" alt="选择文件夹后自动扫描图片">
-        </div>
-        
-        <!-- 状态提示 -->
-        <div class="status-info" id="scan-status">请点击「选择图片文件夹」开始扫描</div>
-    </div>
-
-    <script>
-        // 核心变量
-        let imageFiles = []; // 存储扫描到的图片文件
-        let currentImgIndex = 0; // 当前图片索引
-        let carouselTimer = null; // 轮播定时器
-        let switchInterval = 3000; // 默认切换间隔（毫秒）
-
-        // DOM元素
-        const intervalSet = document.getElementById('interval-set');
-        const folderPick = document.getElementById('folder-pick');
-        const startBtn = document.getElementById('start-carousel');
-        const pauseBtn = document.getElementById('pause-carousel');
-        const displayImg = document.getElementById('display-img');
-        const scanStatus = document.getElementById('scan-status');
-
-        // 1. 选择文件夹后自动扫描图片
-        folderPick.addEventListener('change', (e) => {
-            const selectedFiles = e.target.files;
-            if (!selectedFiles.length) return;
-
-            // 显示扫描中状态
-            scanStatus.textContent = `正在扫描文件夹...共发现 ${selectedFiles.length} 个文件`;
-            
-            // 扫描并过滤图片文件（按图片MIME类型筛选）
-            imageFiles = Array.from(selectedFiles).filter(file => file.type.match(/image\/.+/));
-            
-            // 扫描结果反馈
-            if (imageFiles.length === 0) {
-                scanStatus.textContent = '扫描完成：所选文件夹及子文件夹中无图片文件，请重新选择';
-                startBtn.disabled = true;
-                displayImg.src = '';
-                displayImg.alt = '无图片可显示';
-            } else {
-                scanStatus.textContent = `扫描完成：共找到 ${imageFiles.length} 张图片，点击「开始轮播」启动`;
-                // 自动预览第一张图片
-                displayImg.src = URL.createObjectURL(imageFiles[0]);
-                displayImg.alt = `图片 1/${imageFiles.length}`;
-                currentImgIndex = 0;
-                startBtn.disabled = false; // 启用开始按钮
-            }
-        });
-
-        // 2. 开始轮播
-        startBtn.addEventListener('click', () => {
-            // 获取用户设置的间隔（转换为毫秒，最小1秒）
-            switchInterval = parseInt(intervalSet.value) * 1000 || 3000;
-            switchInterval = switchInterval < 1000 ? 1000 : switchInterval;
-
-            // 启动轮播定时器
-            carouselTimer = setInterval(changeImage, switchInterval);
-            
-            // 更新状态和按钮
-            startBtn.disabled = true;
-            pauseBtn.disabled = false;
-            scanStatus.textContent = `轮播中：间隔 ${switchInterval/1000} 秒 | 当前第 ${currentImgIndex+1}/${imageFiles.length} 张`;
-        });
-
-        // 3. 暂停轮播
-        pauseBtn.addEventListener('click', () => {
-            clearInterval(carouselTimer);
-            startBtn.disabled = false;
-            pauseBtn.disabled = true;
-            scanStatus.textContent = `已暂停：当前第 ${currentImgIndex+1}/${imageFiles.length} 张图片`;
-        });
-
-        // 4. 切换图片核心函数
-        function changeImage() {
-            currentImgIndex = (currentImgIndex + 1) % imageFiles.length; // 循环切换
-            const targetImage = imageFiles[currentImgIndex];
-            displayImg.src = URL.createObjectURL(targetImage);
-            displayImg.alt = `图片 ${currentImgIndex+1}/${imageFiles.length}`;
-            scanStatus.textContent = `轮播中：间隔 ${switchInterval/1000} 秒 | 当前第 ${currentImgIndex+1}/${imageFiles.length} 张`;
-        }
-
-        // 5. 页面关闭释放资源
-        window.addEventListener('beforeunload', () => {
-            imageFiles.forEach(img => URL.revokeObjectURL(img.src));
-        });
-    </script>
+  <div class="wrap">
+    <img src="https://你的域名/图片.jpg" alt="图片">
+  </div>
 </body>
 </html>
