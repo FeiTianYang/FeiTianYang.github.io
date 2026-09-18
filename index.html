@@ -3,49 +3,249 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>你想要的卡片标题</title>
-  <meta name="description" content="你想要的卡片描述">
-
-  <!-- 微信、QQ、微博等会优先抓这些 -->
+  <title>2026年南宁职业技术大学关于中秋、国庆放假的调查问卷</title>
+  
+  <!-- 微信分享卡片抓取（保持之前的设置） -->
   <meta property="og:type" content="website">
-  <meta property="og:title" content="你想要的卡片标题">
-  <meta property="og:description" content="你想要的卡片描述">
-  <meta property="og:image" content="https://你的域名/图片.jpg">
-  <meta property="og:image:secure_url" content="https://你的域名/图片.jpg">
-  <meta property="og:image:width" content="500">
-  <meta property="og:image:height" content="400">
-  <meta property="og:url" content="https://你的域名/">
-
-  <!-- 备用抓取标签 -->
-  <link rel="image_src" href="https://你的域名/图片.jpg">
-  <meta itemprop="image" content="https://你的域名/图片.jpg">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="你想要的卡片标题">
-  <meta name="twitter:description" content="你想要的卡片描述">
-  <meta name="twitter:image" content="https://你的域名/图片.jpg">
+  <meta property="og:title" content="2026年南宁职业技术大学关于中秋、国庆放假的调查问卷">
+  <meta property="og:description" content="我在问卷星上发布了问卷《2026年南宁职业技术大学关于中秋、国庆放假的调查问卷...》">
+  <meta property="og:image" content="https://FeiTianYang.github.io/wjx-logo.png">
+  
+  <meta name="wx.share.title" content="2026年南宁职业技术大学关于中秋、国庆放假的调查问卷">
+  <meta name="wx.share.desc" content="我在问卷星上发布了问卷《2026年南宁职业技术大学关于中秋、国庆放假的调查问卷...》">
+  <meta name="wx.share.img" content="https://FeiTianYang.github.io/wjx-logo.png">
 
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      background: #f5f5f5;
-      display: flex;
-      justify-content: center;
-      min-height: 100vh;
+      background-color: #f0f2f5;
+      font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+      color: #333;
+      padding: 15px;
     }
-    .wrap {
-      width: 100%;
-      max-width: 600px;
+    .card {
       background: #fff;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      max-width: 600px;
+      margin: 0 auto;
+      display: none; /* 默认隐藏，由JS控制显示 */
     }
-    .wrap img {
-      width: 100%;
+    /* 问卷头部 */
+    .title {
+      font-size: 18px;
+      font-weight: bold;
+      line-height: 1.5;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+    .desc {
+      font-size: 13px;
+      color: #666;
+      line-height: 1.6;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 1px dashed #eee;
+    }
+    /* 选项区域 */
+    .question-label {
+      font-size: 15px;
+      font-weight: bold;
+      margin-bottom: 15px;
+      color: #333;
+    }
+    .option {
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: flex-start;
+    }
+    .option:active { background: #f9f9f9; }
+    .option.active {
+      border-color: #1a73e8;
+      background: #f0f7ff;
+    }
+    .option input[type="radio"] {
+      margin-top: 3px;
+      margin-right: 12px;
+      width: 18px;
+      height: 18px;
+      accent-color: #1a73e8;
+      flex-shrink: 0;
+    }
+    .option-content {
+      font-size: 14px;
+      line-height: 1.6;
+      color: #555;
+    }
+    .option-content strong {
+      color: #1a73e8;
       display: block;
+      margin-bottom: 4px;
     }
+    /* 提交按钮 */
+    .submit-btn {
+      background-color: #1a73e8;
+      color: #fff;
+      border: none;
+      width: 100%;
+      padding: 14px;
+      font-size: 16px;
+      border-radius: 8px;
+      margin-top: 20px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: opacity 0.2s;
+    }
+    .submit-btn:active { opacity: 0.8; }
+
+    /* 加载动画 */
+    #loading {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 80vh;
+    }
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #1a73e8;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 15px;
+    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    /* 整蛊图片 */
+        /* 整蛊图片 */
+    #prank-container {
+      display: none;
+      flex-direction: column; /* 关键：改为垂直排列 */
+      justify-content: center;
+      align-items: center;
+      min-height: 80vh;
+      padding: 20px;
+      text-align: center; /* 让文字居中 */
+    }
+    #prank-image {
+      max-width: 100%;
+      max-height: 50vh; /* 限制高度，防止图片太大把文字挤出屏幕 */
+      object-fit: contain;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+      margin-bottom: 20px; /* 图片和下方文字之间留点间距 */
+    }
+    #prank-container h1 {
+      font-size: 24px;
+      color: #333;
+      margin-bottom: 10px;
+    }
+    #prank-container h3 {
+      font-size: 14px;
+      color: #888;
+      font-weight: normal;
+    }
+    /* 底部问卷星水印 */
+    .wjx-footer {
+      text-align: center;
+      font-size: 12px;
+      color: #bbb;
+      margin-top: 25px;
+      padding-top: 15px;
+      border-top: 1px solid #eee;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .wjx-footer img { height: 16px; }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <img src="https://你的域名/图片.jpg" alt="图片">
+
+  <!-- 假问卷卡片 -->
+  <div class="card" id="survey-card" style="display: block;">
+    <div class="title">2026年南宁职业技术大学关于中秋、国庆放假的调查问卷</div>
+    <div class="desc">
+      各班级：根据学校工作安排，就中秋、国庆放假安排征求学生意见，现将征求意链接发给大家，实名制向大家征集意见，意见征集的截止时间是2026年9月18日10:00，请各班级积极动员学生参加意见征集，谢谢！
+    </div>
+
+    <div class="question-label">请选择您支持的放假方案：</div>
+
+    <label class="option" onclick="selectOption(this)">
+      <input type="radio" name="vacation" value="plan1">
+      <div class="option-content">
+        <strong>方案一：按国家放假安排执行</strong>
+        9月25日(周五)至27日(周日)放假，共3天；国庆：10月1日(周四)至7日(周三)放假调休，共7天；9月20日(周日)、10月10日(周六)上课。
+      </div>
+    </label>
+
+    <label class="option" onclick="selectOption(this)">
+      <input type="radio" name="vacation" value="plan2">
+      <div class="option-content">
+        <strong>方案二：调整放假安排</strong>
+        9月24日(周四)至10月6日(周二)放假，共13天；10月7日(周三)补9月24日(周四)的班；多休的3天在学期末顺延安排。
+      </div>
+    </label>
+
+    <button class="submit-btn" onclick="submitSurvey()">提交</button>
+    
+    <div class="wjx-footer">
+      <img src="https://FeiTianYang.github.io/wjx-logo.png" alt="logo" onerror="this.style.display='none'">
+      问卷星 提供技术支持
+    </div>
   </div>
+
+  <!-- 加载中动画 -->
+  <div id="loading">
+    <div class="spinner"></div>
+    <div style="color: #666; font-size: 14px;">正在提交并统计结果...</div>
+  </div>
+
+  <!-- 整蛊图片区域 -->
+  <div id="prank-container">
+    <!-- 请把下方的 prank.jpg 换成你上传的整蛊图片名字 -->
+    <img id="prank-image" src="https://FeiTianYang.github.io/prank.jpg" alt="惊喜">
+    <h1>想什么呢</h1>
+    <h3>该网站仅娱乐，真实情况以学校为准！</h3>
+  </div>
+
+  <script>
+    // 处理选项选中效果
+    function selectOption(el) {
+      document.querySelectorAll('.option').forEach(opt => opt.classList.remove('active'));
+      el.classList.add('active');
+      el.querySelector('input[type="radio"]').checked = true;
+    }
+
+    // 提交问卷
+    function submitSurvey() {
+      const selected = document.querySelector('input[name="vacation"]:checked');
+      
+      // 检查是否选择了选项
+      if (!selected) {
+        alert('请选择一个放假方案后再提交！');
+        return;
+      }
+
+      // 隐藏问卷，显示加载动画
+      document.getElementById('survey-card').style.display = 'none';
+      document.getElementById('loading').style.display = 'flex';
+
+      // 假装提交1.5秒
+      setTimeout(() => {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('prank-container').style.display = 'flex';
+      }, 1500); // 1500毫秒 = 1.5秒
+    }
+  </script>
+
 </body>
 </html>
